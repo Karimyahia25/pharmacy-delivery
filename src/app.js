@@ -8,7 +8,8 @@ import { getFirestore, initializeFirestore, persistentLocalCache, persistentMult
 import { CFG } from "./config.js";
 import { firebaseConfig } from "./firebase-config.js";
 import { setBackend } from "./firebase.js";
-import { mountDelivery } from "./core.js";
+import { loadSettings, renderSettings } from "./settings.js";
+// core.js بيتحمّل بعد الدخول وبعد دمج إعدادات الصيدلية (import ديناميكي) علشان بيقرا الإعدادات مرة واحدة وقت التحميل
 
 const $ = s => document.querySelector(s);
 const ROLES = { admin: 'مدير', cashier: 'كاشير', viewer: 'مطّلع' };
@@ -93,9 +94,20 @@ function start() {
     catch (e) { message('مقدرتش أقرا بيانات حسابك', (e.code || e.message), true); return; }
     if (!prof || !ROLES[prof.role]) { message('حسابك لسه مش متفعّل', 'كلّم المدير يضيفك في البرنامج وبعدين ادخل تاني.', true); return; }
     mounted = true;
+    let configured = false;
+    try { configured = await loadSettings(db, CFG); }   // لو فشلت القراية نكمّل بالافتراضي (الكاش المحلي بيغطي الأوفلاين)
+    catch (e) { flash('مقدرتش أقرا إعدادات الصيدلية — شغال بالافتراضي'); }
+    document.title = CFG.name + ' — متابعة التوصيل'; $('#loginName').textContent = CFG.name; $('#appName').textContent = CFG.name;
     $('#appUser').textContent = (prof.name || '') + ' · ' + ROLES[prof.role];
     show('app');
-    try { await mountDelivery($('#delRoot'), prof.role); }
+    if (prof.role === 'admin') {   // الأدمن بس: شاشة الإعدادات
+      const toSettings = on => { $('#settings').hidden = !on; $('#delRoot').hidden = on; $('#cfgHint').hidden = on || configured; scrollTo(0, 0); };
+      $('#cfgBtn').hidden = false;
+      $('#cfgBtn').onclick = () => { renderSettings($('#settings'), { db, CFG, uid: user.uid, onClose: () => toSettings(false) }); toSettings(true); };
+      $('#cfgHintGo').onclick = () => $('#cfgBtn').click();
+      $('#cfgHint').hidden = configured;
+    }
+    try { const { mountDelivery } = await import('./core.js'); await mountDelivery($('#delRoot'), prof.role); }
     catch (e) { $('#delRoot').innerHTML = '<div class="banner bad">مقدرتش أفتح شاشة التوصيل: ' + String(e.code || e.message).replace(/[<>&]/g, '') + '</div>'; }
   });
 }

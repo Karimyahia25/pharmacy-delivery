@@ -34,6 +34,19 @@ button.sm{min-height:36px;padding:5px 12px;font-size:13px}
 .brand{display:flex;align-items:center;gap:10px;min-width:0}
 .brand b{font-size:15px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .who{display:flex;align-items:center;gap:10px;font-size:13px;color:var(--muted);flex:none}
+/* شاشة الإعدادات */
+.cfgwrap{max-width:720px;margin:0 auto;padding:14px 14px 50px}
+.cfgtop{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:10px}
+.cfgtop h2{margin:0;font-size:19px}
+.cfgsec{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:6px 16px 16px;margin-bottom:12px}
+.cfgsec h3{margin:12px 0 0;font-size:15px;color:var(--green-deep)}
+.cfgsec .g2{display:grid;gap:0 12px;grid-template-columns:1fr}
+@media(min-width:560px){.cfgsec .g2{grid-template-columns:1fr 1fr}}
+.cfgsec textarea{resize:vertical;line-height:1.7}
+.hint{font-size:12.5px;color:var(--muted);margin:8px 0 0}
+.cfgbtns{display:flex;gap:10px;align-items:center}
+.cfgbtns .go{flex:1;min-height:48px;font-size:16px}
+#cfgHint{display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap}
 .net{font-size:12px;font-weight:700;color:var(--red)}
 .offbar{position:sticky;top:52px;z-index:19;background:var(--red-soft);color:var(--red);border-bottom:1px solid #fecaca;padding:8px 14px;font-size:13px;font-weight:700;text-align:center}
 /* أوفلاين: أزرار الكتابة متعطّلة (الكتابة المعلّقة ممكن تتقفل لما النت يرجع لأن القواعد بتشترط وقت السيرفر) */

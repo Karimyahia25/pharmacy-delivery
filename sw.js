@@ -1,8 +1,8 @@
 // Service worker: بيحفظ ملفات البرنامج في الجهاز علشان يفتح بسرعة وحتى لو النت وقع لحظة.
 // مبيلمسش اتصالات Firebase (Firestore/Auth) خالص — دي بتروح للشبكة دايماً. البيانات الأوفلاين من كاش Firestore نفسه مش من هنا.
 // لما تغيّر أي ملف في البرنامج: ارفع رقم V علشان الأجهزة تمسح النسخة القديمة.
-const V = 'delivery-v1';
-const SHELL = ['./', 'index.html', 'css/app.css', 'src/app.js', 'src/core.js', 'src/config.js', 'src/firebase.js', 'src/firebase-config.js',
+const V = 'delivery-v2';
+const SHELL = ['./', 'index.html', 'css/app.css', 'src/app.js', 'src/settings.js', 'src/core.js', 'src/config.js', 'src/firebase.js', 'src/firebase-config.js',
   'manifest.webmanifest', 'icons/icon-192.png', 'icons/icon-512.png', 'icons/apple-touch-icon.png'];
 const CDN = ['https://www.gstatic.com/firebasejs/', 'https://cdnjs.cloudflare.com/ajax/libs/xlsx/'];   // نسخ مثبّتة برقم الإصدار ← cache-first
 
