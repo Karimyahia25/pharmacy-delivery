@@ -2,6 +2,7 @@
 // البيانات مسطّحة (zoneIn/zoneOut… مش مجموعات متداخلة) علشان قواعد Firestore تتحقق منها بسهولة.
 // بعد الحفظ بنعمل reload: core.js بيقرا الإعدادات مرة واحدة وقت التحميل.
 import { doc, getDoc, setDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+import { mountUsers } from "./users.js";
 
 const esc = t => String(t == null ? '' : t).replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
 const REF = db => doc(db, 'settings', 'app');
@@ -25,7 +26,7 @@ export async function loadSettings(db, CFG) {
 
 const hourLbl = h => (h % 12 || 12) + (h < 12 ? ' ص' : ' م') + (h === 0 ? ' (منتصف الليل)' : '');
 
-export function renderSettings(root, { db, CFG, uid, onClose }) {
+export function renderSettings(root, { db, CFG, uid, onClose, firebaseConfig }) {
   root.innerHTML = `
   <div class="cfgwrap">
     <div class="cfgtop"><h2>⚙ إعدادات الصيدلية</h2><button type="button" class="ghost sm" data-close>رجوع للتوصيل</button></div>
@@ -52,7 +53,10 @@ export function renderSettings(root, { db, CFG, uid, onClose }) {
 
     <div class="err" id="cErr" role="alert"></div>
     <div class="cfgbtns"><button type="button" class="go" id="cSave">حفظ الإعدادات</button><button type="button" class="ghost" data-close>إلغاء</button></div>
+
+    <section class="cfgsec" id="usersSec" style="margin-top:22px"></section>
   </div>`;
+  mountUsers(root.querySelector('#usersSec'), { db, firebaseConfig, CFG, me: uid });
 
   root.querySelectorAll('[data-close]').forEach(b => b.onclick = onClose);
   root.querySelector('#cSave').onclick = async () => {
@@ -70,6 +74,7 @@ export function renderSettings(root, { db, CFG, uid, onClose }) {
     const aliasIn = zin !== CFG.zones.in ? keep(CFG.zoneAliases.in, CFG.zones.in, zin) : (CFG.zoneAliases.in || []).filter(x => x !== zin);
     const aliasOut = zout !== CFG.zones.out ? keep(CFG.zoneAliases.out, CFG.zones.out, zout) : (CFG.zoneAliases.out || []).filter(x => x !== zout);
     if (aliasIn.includes(zout) || aliasOut.includes(zin)) { err.textContent = 'الاسم ده كان مستخدم قبل كده لمنطقة تانية — اختار اسم مختلف'; return; }
+    if (!navigator.onLine) { err.textContent = 'مفيش اتصال بالإنترنت — مينفعش تحفظ دلوقتي.'; return; }
     const btn = g('cSave'); btn.disabled = true;
     try {
       await setDoc(REF(db), { name, receiptSub: sub, zoneIn: zin, zoneOut: zout, aliasIn, aliasOut, commissionOut: comm, promiseMin: prom, dayStartHour: day, employees: emps, updatedAt: serverTimestamp(), updatedBy: uid });

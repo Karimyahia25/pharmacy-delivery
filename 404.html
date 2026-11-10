@@ -45,12 +45,23 @@
 <div id="app" hidden>
   <header class="top">
     <div class="brand"><span class="logo sm">🛵</span><b id="appName"></b></div>
-    <div class="who"><span id="net" class="net" role="status"></span><span id="appUser"></span><button class="ghost sm" id="cfgBtn" type="button" hidden>⚙ الإعدادات</button><button class="ghost sm" id="install" type="button" hidden>ثبّت التطبيق</button><button class="ghost sm" id="appOut" type="button">خروج</button></div>
+    <div class="who"><span id="net" class="net" role="status"></span><span id="appUser"></span><button class="ghost sm" id="pwBtn" type="button" hidden title="تغيير كلمة السر" aria-label="تغيير كلمة السر">🔑</button><button class="ghost sm" id="cfgBtn" type="button" hidden>⚙ الإعدادات</button><button class="ghost sm" id="install" type="button" hidden>ثبّت التطبيق</button><button class="ghost sm" id="appOut" type="button">خروج</button></div>
   </header>
   <div id="offBar" class="offbar" role="alert" hidden>⚠ مفيش اتصال بالإنترنت — بتشوف آخر بيانات اتحمّلت. التسجيل والتسليم والحذف متوقفين لحد ما النت يرجع.</div>
   <div id="cfgHint" class="banner" hidden>لسه ماظبطتش إعدادات الصيدلية (الاسم والمناطق والموظفين). <button type="button" class="ghost sm" id="cfgHintGo">افتح الإعدادات</button></div>
   <main id="delRoot"></main>
   <section id="settings" hidden></section>
+</div>
+
+<div id="pwDlg" class="dlgback" hidden>
+  <div class="card" role="dialog" aria-labelledby="pwT">
+    <h1 id="pwT">🔑 تغيير كلمة السر</h1>
+    <label for="pwCur">كلمة السر الحالية</label><input id="pwCur" type="password" dir="ltr" autocomplete="current-password">
+    <label for="pwNew">كلمة السر الجديدة (8 حروف على الأقل)</label><input id="pwNew" type="password" dir="ltr" autocomplete="new-password">
+    <label for="pwNew2">تأكيد كلمة السر الجديدة</label><input id="pwNew2" type="password" dir="ltr" autocomplete="new-password">
+    <div class="err" id="pwErr" role="alert"></div>
+    <div class="cfgbtns"><button type="button" class="go" id="pwSave">حفظ</button><button type="button" class="ghost" id="pwCancel">إلغاء</button></div>
+  </div>
 </div>
 
 <script type="module" src="src/app.js"></script>

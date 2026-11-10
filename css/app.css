@@ -34,6 +34,23 @@ button.sm{min-height:36px;padding:5px 12px;font-size:13px}
 .brand{display:flex;align-items:center;gap:10px;min-width:0}
 .brand b{font-size:15px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .who{display:flex;align-items:center;gap:10px;font-size:13px;color:var(--muted);flex:none}
+/* نافذة تغيير كلمة السر + قايمة المستخدمين */
+.dlgback{position:fixed;inset:0;z-index:60;background:rgba(15,23,42,.55);display:flex;align-items:center;justify-content:center;padding:16px;overflow:auto}
+.dlgback .card{margin:auto}
+.okmsg{color:var(--green-deep);background:var(--green-soft);border:1px solid #a7f3d0;border-radius:10px;padding:8px 12px;font-size:13.5px;font-weight:600;margin:8px 0}
+.cnt{font-size:12px;font-weight:600;color:var(--muted);margin-inline-start:6px}
+.ulist{display:flex;flex-direction:column;gap:8px;margin:10px 0}
+.urow{display:flex;flex-wrap:wrap;align-items:center;gap:8px 10px;border:1px solid var(--line);border-radius:12px;padding:10px 12px;background:#fff}
+.urow.off{background:#f8fafc;opacity:.75}
+.uinfo{flex:1 1 160px;min-width:0}.uinfo small{display:block;color:var(--muted);font-size:12px}
+.uact{display:flex;gap:6px}
+.uedit{flex-basis:100%;border-top:1px dashed var(--line);padding-top:6px}
+.uadd{margin-top:10px;border:1px dashed var(--line);border-radius:12px;padding:8px 14px 14px}
+.uadd summary{cursor:pointer;font-weight:700;color:var(--green-deep);padding:6px 0}
+.uadd .go,.uedit .go{margin-top:12px;width:100%;min-height:46px}
+.pill{display:inline-block;border-radius:99px;padding:2px 10px;font-size:12px;font-weight:700;background:#d1fae5;color:#065f46}
+.pill.red{background:#fee2e2;color:#b91c1c}
+
 /* شاشة الإعدادات */
 .cfgwrap{max-width:720px;margin:0 auto;padding:14px 14px 50px}
 .cfgtop{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:10px}

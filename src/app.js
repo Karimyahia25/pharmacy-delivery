@@ -3,8 +3,8 @@
 //   admin = كل حاجة · cashier = جهاز الكاشير/الدليفري (يسجّل ويسلّم) · viewer = صاحب الصيدلية (إحصائيات وسجل من غير تعديل)
 // مفيش تسجيل حساب جديد من البرنامج: الحسابات بيعملها الأدمن (Firebase Console دلوقتي).
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
-import { getAuth, signInWithEmailAndPassword, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
-import { getFirestore, initializeFirestore, persistentLocalCache, persistentMultipleTabManager, terminate, clearIndexedDbPersistence, doc, getDoc } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+import { getAuth, signInWithEmailAndPassword, onAuthStateChanged, signOut, EmailAuthProvider, reauthenticateWithCredential, updatePassword } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
+import { getFirestore, initializeFirestore, persistentLocalCache, persistentMultipleTabManager, terminate, clearIndexedDbPersistence, doc, getDoc, onSnapshot } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 import { CFG } from "./config.js";
 import { firebaseConfig } from "./firebase-config.js";
 import { setBackend } from "./firebase.js";
@@ -23,8 +23,10 @@ const ERR = {
   'auth/network-request-failed': 'مفيش اتصال بالإنترنت',
 };
 
-function show(id) { ['boot', 'msg', 'login', 'app'].forEach(x => { $('#' + x).hidden = x !== id; }); }
-function message(title, body, withLogout) {
+let LOCKED = false;   // حساب موقوف: بعد ما نعرض الرسالة مفيش شاشة تانية تتفتح فوقها
+function show(id) { if (LOCKED && id !== 'msg') return; ['boot', 'msg', 'login', 'app'].forEach(x => { $('#' + x).hidden = x !== id; }); }
+function message(title, body, withLogout, lock) {
+  if (lock) LOCKED = true;
   $('#msgT').textContent = title; $('#msgB').textContent = body; $('#msgOut').hidden = !withLogout; show('msg');
 }
 
@@ -59,6 +61,31 @@ addEventListener('beforeinstallprompt', ev => { ev.preventDefault(); installEv =
 addEventListener('appinstalled', () => { installEv = null; $('#install').hidden = true; });
 $('#install').onclick = async () => { if (!installEv) return; installEv.prompt(); try { await installEv.userChoice; } catch (e) { } installEv = null; $('#install').hidden = true; };
 
+/* ---------- تغيير كلمة السر (كل مستخدم لنفسه): لازم يكتب الحالية الأول ---------- */
+const PW_ERR = { 'auth/wrong-password': 'كلمة السر الحالية غلط', 'auth/invalid-credential': 'كلمة السر الحالية غلط', 'auth/weak-password': 'كلمة السر الجديدة ضعيفة',
+  'auth/too-many-requests': 'محاولات كتير — استنى شوية وجرّب تاني', 'auth/network-request-failed': 'مفيش اتصال بالإنترنت', 'auth/requires-recent-login': 'اخرج وادخل تاني وجرّب' };
+function setupPassword(user) {
+  const dlg = $('#pwDlg'), g = id => $('#' + id), err = g('pwErr');
+  const close = () => { dlg.hidden = true; ['pwCur', 'pwNew', 'pwNew2'].forEach(i => { g(i).value = ''; }); err.textContent = ''; g('pwSave').disabled = false; };
+  $('#pwBtn').hidden = false;
+  $('#pwBtn').onclick = () => { dlg.hidden = false; g('pwCur').focus(); };
+  g('pwCancel').onclick = close;
+  dlg.onclick = ev => { if (ev.target === dlg) close(); };
+  g('pwSave').onclick = async () => {
+    err.textContent = '';
+    const cur = g('pwCur').value, nw = g('pwNew').value, nw2 = g('pwNew2').value;
+    const bad = (!cur && 'اكتب كلمة السر الحالية') || (nw.length < 8 && 'كلمة السر الجديدة لازم 8 حروف على الأقل') || (nw !== nw2 && 'التأكيد مش مطابق') || (nw === cur && 'الجديدة لازم تختلف عن الحالية');
+    if (bad) { err.textContent = bad; return; }
+    if (!navigator.onLine) { err.textContent = 'مفيش اتصال بالإنترنت'; return; }
+    g('pwSave').disabled = true;
+    try {
+      await reauthenticateWithCredential(user, EmailAuthProvider.credential(user.email, cur));
+      await updatePassword(user, nw);
+      close(); flash('✔ كلمة السر اتغيّرت');
+    } catch (e) { err.textContent = PW_ERR[e.code] || ('مقدرتش أغيّرها: ' + (e.code || e.message)); g('pwSave').disabled = false; }
+  };
+}
+
 function openDb(app) {   // كاش محلي (IndexedDB): الشاشة بتفتح بآخر بيانات حتى من غير نت. لو المتصفح مش بيدعمه (تصفح خاص) نرجع للعادي.
   try { return initializeFirestore(app, { localCache: persistentLocalCache({ tabManager: persistentMultipleTabManager() }) }); }
   catch (e) { return getFirestore(app); }
@@ -92,8 +119,16 @@ function start() {
     let prof = null;
     try { const s = await getDoc(doc(db, 'users', user.uid)); prof = s.exists() ? s.data() : null; }
     catch (e) { message('مقدرتش أقرا بيانات حسابك', (e.code || e.message), true); return; }
+    if (prof && prof.active === false) { message('حسابك موقوف', 'كلّم المدير علشان يفعّل حسابك تاني.', true, true); return; }
     if (!prof || !ROLES[prof.role]) { message('حسابك لسه مش متفعّل', 'كلّم المدير يضيفك في البرنامج وبعدين ادخل تاني.', true); return; }
     mounted = true;
+    // مراقبة مستندي أنا: لو اتوقفت أو اتمسح مستندي أتقفل فوراً، ولو دوري اتغيّر أعمل reload علشان الصلاحيات الجديدة تتطبق
+    onSnapshot(doc(db, 'users', user.uid), s => {
+      const d = s.exists() ? s.data() : null;
+      if (!d || d.active === false) { message('حسابك موقوف', 'كلّم المدير علشان يفعّل حسابك تاني.', true, true); return; }
+      if (d.role !== prof.role) location.reload();
+    }, () => { });
+    setupPassword(user);
     let configured = false;
     try { configured = await loadSettings(db, CFG); }   // لو فشلت القراية نكمّل بالافتراضي (الكاش المحلي بيغطي الأوفلاين)
     catch (e) { flash('مقدرتش أقرا إعدادات الصيدلية — شغال بالافتراضي'); }
@@ -103,7 +138,7 @@ function start() {
     if (prof.role === 'admin') {   // الأدمن بس: شاشة الإعدادات
       const toSettings = on => { $('#settings').hidden = !on; $('#delRoot').hidden = on; $('#cfgHint').hidden = on || configured; scrollTo(0, 0); };
       $('#cfgBtn').hidden = false;
-      $('#cfgBtn').onclick = () => { renderSettings($('#settings'), { db, CFG, uid: user.uid, onClose: () => toSettings(false) }); toSettings(true); };
+      $('#cfgBtn').onclick = () => { renderSettings($('#settings'), { db, CFG, uid: user.uid, firebaseConfig, onClose: () => toSettings(false) }); toSettings(true); };
       $('#cfgHintGo').onclick = () => $('#cfgBtn').click();
       $('#cfgHint').hidden = configured;
     }

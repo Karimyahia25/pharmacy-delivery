@@ -3,8 +3,8 @@
 // الملفات: الشبكة الأول (بنتجاوز كاش المتصفح لأن GitHub Pages بيحط max-age=600 فكان بيرجّع نسخة قديمة لحد 10 دقايق)،
 // ولو الشبكة وقعت أو اتأخرت أكتر من 4 ثواني ← النسخة المحفوظة. المكتبات الخارجية (نسخ مثبّتة برقم) ← الكاش الأول.
 // لما تغيّر أي ملف في البرنامج: ارفع رقم V علشان الأجهزة تمسح النسخة القديمة.
-const V = 'delivery-v3';
-const SHELL = ['./', 'index.html', 'css/app.css', 'src/app.js', 'src/settings.js', 'src/core.js', 'src/config.js', 'src/firebase.js', 'src/firebase-config.js',
+const V = 'delivery-v4';
+const SHELL = ['./', 'index.html', 'css/app.css', 'src/app.js', 'src/settings.js', 'src/users.js', 'src/core.js', 'src/config.js', 'src/firebase.js', 'src/firebase-config.js',
   'manifest.webmanifest', 'icons/icon-192.png', 'icons/icon-512.png', 'icons/apple-touch-icon.png'];
 const CDN = ['https://www.gstatic.com/firebasejs/', 'https://cdnjs.cloudflare.com/ajax/libs/xlsx/'];
 const WAIT = 4000;
